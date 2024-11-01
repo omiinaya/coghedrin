@@ -13,7 +13,7 @@ class MyCog(commands.Cog):
         await ctx.send("I can do stuff!")
 
     @commands.command()
-    async def ping(self, ctx):
+    async def pinghedrin(self, ctx):
         """This pongs when you ping"""
         await ctx.send("Pong!")
 
