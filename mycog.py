@@ -14,4 +14,8 @@ class MyCog(commands.Cog):
 
     async def ping(self, ctx):
         """This pongs when you ping"""
-        await ctx.send("pong!")
+        await ctx.send("Pong!")
+
+    async def rain(self, ctx):
+        """This shows when it will rain next"""
+        await ctx.send("Soon!")
