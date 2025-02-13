@@ -1,3 +1,4 @@
+import random
 from redbot.core import commands
 
 class MyCog(commands.Cog):
@@ -21,3 +22,9 @@ class MyCog(commands.Cog):
     async def rain(self, ctx):
         """This shows when it will rain next"""
         await ctx.send("Soon!")
+
+    @commands.command()
+    async def dice(self, ctx):
+        """This rolls from 1-100"""
+        random_number = random.randint(1, 100)
+        await ctx.send(f"{random_number}")
