@@ -126,7 +126,7 @@ class MyCog(commands.Cog):
     async def when(self, ctx, condition: str):
         """Tells how long until the specified condition (day, night, normal, rain) or if it's already that condition."""
         condition = condition.lower()
-        if condition not in ["day", "night", "normal", "rain"]:
+        if condition not in ["day", "night", "rain"]:
             await ctx.send("Invalid condition. Please choose from 'day', 'night', 'normal', or 'rain'.")
             return
 
@@ -157,7 +157,7 @@ class MyCog(commands.Cog):
                     eastern_america_data = data[0]['data']['Eastern Americas']
                     current_weather, time_until_next, next_weather = self.get_current_weather(eastern_america_data)
                     if current_weather.lower() == condition:
-                        message = f"It's currently '{condition}' already."
+                        message = f"It's currently '{condition}'."
                     else:
                         message = f"Time until '{condition}' is {time_until_next}."
                 else:
