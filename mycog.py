@@ -1,6 +1,11 @@
 import random
 import requests
+import os
+from dotenv import load_dotenv
 from redbot.core import commands
+
+# Load environment variables from .env file
+load_dotenv()
 
 class MyCog(commands.Cog):
     """My custom cog"""
@@ -57,7 +62,8 @@ class MyCog(commands.Cog):
     @commands.command()
     async def apicall(self, ctx):
         """Makes an API call and returns the response."""
-        url = "http://n8n.mrxlab.net/webhook/6f7b288e-1efe-4504-a6fd-660931327269"  # Replace with your API endpoint
+        url = os.getenv('SAMPLE_API')
+        #url = "http://n8n.mrxlab.net/webhook/6f7b288e-1efe-4504-a6fd-660931327269"  # Replace with your API endpoint
         response = requests.get(url)
         
         if response.status_code == 200:
