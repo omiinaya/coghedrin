@@ -10,7 +10,6 @@ class MyCog(commands.Cog):
     @commands.command()
     async def mycom(self, ctx):
         """This does stuff!"""
-        # Your code will go here
         await ctx.send("I can do stuff!")
 
     @commands.command()
@@ -58,13 +57,18 @@ class MyCog(commands.Cog):
     async def weather(self, ctx):
         """Fetch weather data from an API"""
         url = "https://throneandliberty.gameslantern.com/api/weather"
-        headers = {"x-requested-with": "XMLHttpRequest"}
-        response = requests.get(url, headers=headers)
-        if response.status_code == 200:
+        headers = {
+            "accept": "application/json, text/plain, */*",
+            "x-requested-with": "XMLHttpRequest",
+            "x-xsrf-token": "eyJpdiI6Ijl4YlFub0pZVUFzZFkzV1hpY1YvVmc9PSIsInZhbHVlIjoiZUlINVl3ektwSEFVQ3MxcU56YWJWUzZZTGJCVE5pb2JIbHBGOG9ZR2M3SE5OM2JUaVE4V1V4UXUxcm41M2I5OG5QODd5WEs0RlhnZUx5TldKQXpSWjlQUGtySlBKY1hwT1R6UjVDQTl5TnVSdUdmWXIvMzhuajV5aTB4TUZldHgiLCJtYWMiOiI0ZDdlNDQ5M2U3NzIxNTI1NGJhOTkyYzliMTFjNWZkNzc0OWUzYjdmYWE1NDZmY2E1NjYxMGQyODE4ZTBkNzIwIiwidGFnIjoiIn0="
+        }
+        try:
+            response = requests.get(url, headers=headers)
+            response.raise_for_status()  # Raise an exception for HTTP errors
             data = response.json()
             await ctx.send(f"Weather data: {data}")
-        else:
-            await ctx.send(f"Failed to fetch weather data. Status code: {response.status_code}")
+        except requests.RequestException as e:
+            await ctx.send(f"Failed to fetch weather data: {e}")
 
 def setup(bot):
     bot.add_cog(MyCog(bot))
