@@ -94,7 +94,7 @@ class MyCog(commands.Cog):
         if response.status_code == 200:
             content_type = response.headers.get('Content-Type')
             
-            if 'application/json' in content type:
+            if 'application/json' in content_type:
                 data = response.json()
                 eastern_america_data = data[0]['data']['Eastern Americas']
                 current_weather, time_until_next = self.get_current_weather(eastern_america_data)
