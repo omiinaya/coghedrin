@@ -97,8 +97,8 @@ class MyCog(commands.Cog):
             if 'application/json' in content_type:
                 data = response.json()
                 eastern_america_data = data[0]['data']['Eastern Americas']
-                current_weather, time_until_next = self.get_current_weather(eastern_america_data)
-                message = f"Current weather is '{current_weather}'. Time until next weather type: {time_until_next}."
+                current_weather, time_until_next, next_weather = self.get_current_weather(eastern_america_data)
+                message = f"Current weather is '{current_weather}'. Time until next weather type ({next_weather}): {time_until_next}."
             else:
                 message = "The API did not return JSON data."
             
@@ -121,6 +121,7 @@ class MyCog(commands.Cog):
         current_time = datetime.now().timestamp()
         current_weather = "Unknown"
         time_until_next = "Unknown"
+        next_weather = "Unknown"
         
         for i, forecast in enumerate(data):
             forecast_time = forecast['ts'] // 1000
@@ -128,6 +129,7 @@ class MyCog(commands.Cog):
                 current_weather = forecast['condition'].replace("EWeatherType::", "")
                 if i + 1 < len(data):
                     next_forecast_time = data[i + 1]['ts'] // 1000
+                    next_weather = data[i + 1]['condition'].replace("EWeatherType::", "")
                     time_until_next_seconds = next_forecast_time - current_time
                     hours, remainder = divmod(time_until_next_seconds, 3600)
                     minutes = remainder // 60
@@ -140,7 +142,7 @@ class MyCog(commands.Cog):
             else:
                 break
         
-        return current_weather, time_until_next
+        return current_weather, time_until_next, next_weather
 
 def setup(bot):
     bot.add_cog(MyCog(bot))
