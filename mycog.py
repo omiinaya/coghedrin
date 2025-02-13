@@ -1,4 +1,4 @@
-import requests
+import random
 from redbot.core import commands
 
 class MyCog(commands.Cog):
@@ -8,19 +8,9 @@ class MyCog(commands.Cog):
         self.bot = bot
 
     @commands.command()
-    async def mycom(self, ctx):
-        """This does stuff!"""
-        await ctx.send("I can do stuff!")
-
-    @commands.command()
     async def pinghedrin(self, ctx):
         """This pongs when you ping"""
         await ctx.send("Pong!")
-
-    @commands.command()
-    async def rain(self, ctx):
-        """This shows when it will rain next"""
-        await ctx.send("Soon!")
 
     @commands.command()
     async def dice(self, ctx):
@@ -52,23 +42,6 @@ class MyCog(commands.Cog):
         await ctx.send(
             f"{ctx.author.mention} chose {user_choice}. {opponent.mention} chose {opponent_choice}. {result}"
         )
-
-    @commands.command()
-    async def weather(self, ctx):
-        """Fetch weather data from an API"""
-        url = "https://throneandliberty.gameslantern.com/api/weather"
-        headers = {
-            "accept": "application/json, text/plain, */*",
-            "x-requested-with": "XMLHttpRequest",
-            "x-xsrf-token": "eyJpdiI6Ijl4YlFub0pZVUFzZFkzV1hpY1YvVmc9PSIsInZhbHVlIjoiZUlINVl3ektwSEFVQ3MxcU56YWJWUzZZTGJCVE5pb2JIbHBGOG9ZR2M3SE5OM2JUaVE4V1V4UXUxcm41M2I5OG5QODd5WEs0RlhnZUx5TldKQXpSWjlQUGtySlBKY1hwT1R6UjVDQTl5TnVSdUdmWXIvMzhuajV5aTB4TUZldHgiLCJtYWMiOiI0ZDdlNDQ5M2U3NzIxNTI1NGJhOTkyYzliMTFjNWZkNzc0OWUzYjdmYWE1NDZmY2E1NjYxMGQyODE4ZTBkNzIwIiwidGFnIjoiIn0="
-        }
-        try:
-            response = requests.get(url, headers=headers)
-            response.raise_for_status()  # Raise an exception for HTTP errors
-            data = response.json()
-            await ctx.send(f"Weather data: {data}")
-        except requests.RequestException as e:
-            await ctx.send(f"Failed to fetch weather data: {e}")
 
 def setup(bot):
     bot.add_cog(MyCog(bot))
