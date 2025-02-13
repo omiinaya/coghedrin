@@ -57,12 +57,25 @@ class MyCog(commands.Cog):
     @commands.command()
     async def apicall(self, ctx):
         """Makes an API call and returns the response."""
-        url = "http://n8n.mrxlab.net/webhook/6f7b288e-1efe-4504-a6fd-660931327269"  # Replace with your API endpoint
+        url = "https://api.example.com/data"  # Replace with your API endpoint
         response = requests.get(url)
         
         if response.status_code == 200:
-            data = response.json()
-            await ctx.send(f"API Response: {data}")
+            content_type = response.headers.get('Content-Type')
+            
+            if 'application/json' in content_type:
+                data = response.json()
+                message = f"API Response: {data}"
+            else:
+                data = response.text
+                message = f"API Response: {data}"
+            
+            # Split the message if it's too long
+            if len(message) > 2000:
+                for i in range(0, len(message), 2000):
+                    await ctx.send(message[i:i+2000])
+            else:
+                await ctx.send(message)
         else:
             await ctx.send("Failed to retrieve data from the API.")
 
