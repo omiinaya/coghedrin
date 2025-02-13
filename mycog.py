@@ -86,19 +86,19 @@ class MyCog(commands.Cog):
             await ctx.send("Failed to retrieve data from the API.")
     
     @commands.command()
-    async def current_weather(self, ctx):
-        """Returns the current weather type for Eastern Americas."""
+    async def weather(self, ctx):
+        """Returns the current weather type for Eastern Americas and time until the next weather type."""
         url = os.getenv('WEATHER_API')
         response = requests.get(url)
         
         if response.status_code == 200:
             content_type = response.headers.get('Content-Type')
             
-            if 'application/json' in content_type:
+            if 'application/json' in content type:
                 data = response.json()
                 eastern_america_data = data[0]['data']['Eastern Americas']
-                current_weather = self.get_current_weather(eastern_america_data)
-                message = f"Current weather in Eastern Americas: {current_weather}"
+                current_weather, time_until_next = self.get_current_weather(eastern_america_data)
+                message = f"Current weather is '{current_weather}'. Time until next weather type: {time_until_next}."
             else:
                 message = "The API did not return JSON data."
             
@@ -117,18 +117,30 @@ class MyCog(commands.Cog):
         return formatted_message
 
     def get_current_weather(self, data):
-        """Determines the current weather type based on the provided data."""
+        """Determines the current weather type and time until the next weather type based on the provided data."""
         current_time = datetime.now().timestamp()
         current_weather = "Unknown"
+        time_until_next = "Unknown"
         
-        for forecast in data:
+        for i, forecast in enumerate(data):
             forecast_time = forecast['ts'] // 1000
             if forecast_time <= current_time:
-                current_weather = forecast['condition']
+                current_weather = forecast['condition'].replace("EWeatherType::", "")
+                if i + 1 < len(data):
+                    next_forecast_time = data[i + 1]['ts'] // 1000
+                    time_until_next_seconds = next_forecast_time - current_time
+                    hours, remainder = divmod(time_until_next_seconds, 3600)
+                    minutes = remainder // 60
+                    if hours > 0:
+                        time_until_next = f"{int(hours)} hours and {int(minutes)} minutes"
+                    else:
+                        time_until_next = f"{int(minutes)} minutes"
+                else:
+                    time_until_next = "N/A"
             else:
                 break
         
-        return current_weather
+        return current_weather, time_until_next
 
 def setup(bot):
     bot.add_cog(MyCog(bot))
