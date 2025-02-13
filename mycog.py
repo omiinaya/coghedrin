@@ -226,6 +226,17 @@ class MyCog(commands.Cog):
                 break
         
         return current_time_of_day, time_until_next, next_time_of_day
+    
+    @commands.command()
+    async def measure(self, ctx):
+        """Responds randomly with 1 - 14 inches, unless the caller's nickname is 'Sullen' in which case the response should be from 8-14 inches."""
+        nickname = ctx.author.display_name
+        if nickname.lower() == 'Sullen':
+            measurement = random.randint(8, 14)
+        else:
+            measurement = random.randint(1, 14)
+        
+        await ctx.send(f"{ctx.author.mention}, you measured {measurement} inches.")
 
 def setup(bot):
     bot.add_cog(MyCog(bot))
