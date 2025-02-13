@@ -27,4 +27,4 @@ class MyCog(commands.Cog):
     async def dice(self, ctx):
         """This rolls from 1-100"""
         random_number = random.randint(1, 100)
-        await ctx.send(f"{random_number}")
+        await ctx.send(f"{ctx.author.mention} rolled a {random_number}")
