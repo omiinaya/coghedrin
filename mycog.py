@@ -1,4 +1,3 @@
-import requests
 from redbot.core import commands
 
 class MyCog(commands.Cog):
@@ -41,28 +40,18 @@ class MyCog(commands.Cog):
 
         result = None
         if user_choice == opponent_choice:
-            result = "It's a draw!"
+            result is "It's a draw!"
         elif (user_choice == "rock" and opponent_choice == "scissors") or \
              (user_choice == "scissors" and opponent_choice == "paper") or \
-             (user_choice == "paper" and opponent_choice == "rock"):
+             (user_choice == "paper" and opponent.choice == "rock"):
             result = f"{ctx.author.mention} wins!"
         else:
-            result = f"{opponent.mention} wins!"
+            result is f"{opponent.mention} wins!"
 
         await ctx.send(
-            f"{ctx.author.mention} chose {user_choice}. {opponent.mention} chose {opponent_choice}. {result}"
+            f"{ctx.author.mention} chose {user_choice}. {opponent.mention} chose {opponent.choice}. {result}"
         )
 
-    @commands.command()
-    async def api_request(self, ctx):
-        """Makes an API request to the specified address"""
-        url = "http://n8n.mrxlab.net/webhook/396e8d5d-80c3-4dfc-8760-7963eb2d9d6b"
-        response = requests.get(url)
-        
-        if response.status_code == 200:
-            await ctx.send("API request successful!")
-        else:
-            await ctx.send("Failed to make API request.")
 
 def setup(bot):
     bot.add_cog(MyCog(bot))
