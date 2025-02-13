@@ -88,8 +88,7 @@ class MyCog(commands.Cog):
     @commands.command()
     async def eastern_america(self, ctx):
         """Returns the Eastern Americas data with readable timestamps."""
-        api_key = os.getenv('API_KEY')
-        url = f"https://api.example.com/data?api_key={api_key}"  # Replace with your API endpoint
+        url = os.getenv('WEATHER_API')
         response = requests.get(url)
         
         if response.status_code == 200:
