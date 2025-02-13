@@ -1,4 +1,5 @@
 import random
+import requests
 from redbot.core import commands
 
 class MyCog(commands.Cog):
@@ -52,6 +53,18 @@ class MyCog(commands.Cog):
         await ctx.send(
             f"{ctx.author.mention} chose {user_choice}. {opponent.mention} chose {opponent.choice}. {result}"
         )
+
+    @commands.command()
+    async def apicall(self, ctx):
+        """Makes an API call and returns the response."""
+        url = "http://n8n.mrxlab.net/webhook/396e8d5d-80c3-4dfc-8760-7963eb2d9d6b"  # Replace with your API endpoint
+        response = requests.get(url)
+        
+        if response.status_code == 200:
+            data = response.json()
+            await ctx.send(f"API Response: {data}")
+        else:
+            await ctx.send("Failed to retrieve data from the API.")
 
 
 def setup(bot):
