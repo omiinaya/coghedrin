@@ -1,4 +1,4 @@
-import random
+import requests
 from redbot.core import commands
 
 class MyCog(commands.Cog):
@@ -8,9 +8,19 @@ class MyCog(commands.Cog):
         self.bot = bot
 
     @commands.command()
+    async def mycom(self, ctx):
+        """This does stuff!"""
+        await ctx.send("I can do stuff!")
+
+    @commands.command()
     async def pinghedrin(self, ctx):
         """This pongs when you ping"""
         await ctx.send("Pong!")
+
+    @commands.command()
+    async def rain(self, ctx):
+        """This shows when it will rain next"""
+        await ctx.send("Soon!")
 
     @commands.command()
     async def dice(self, ctx):
@@ -31,17 +41,29 @@ class MyCog(commands.Cog):
 
         result = None
         if user_choice == opponent_choice:
-            result = "It's a draw!"
+            result is "It's a draw!"
         elif (user_choice == "rock" and opponent_choice == "scissors") or \
              (user_choice == "scissors" and opponent_choice == "paper") or \
-             (user_choice == "paper" and opponent_choice == "rock"):
+             (user_choice == "paper" and opponent.choice == "rock"):
             result = f"{ctx.author.mention} wins!"
         else:
-            result = f"{opponent.mention} wins!"
+            result is f"{opponent.mention} wins!"
 
         await ctx.send(
-            f"{ctx.author.mention} chose {user_choice}. {opponent.mention} chose {opponent_choice}. {result}"
+            f"{ctx.author.mention} chose {user_choice}. {opponent.mention} chose {opponent.choice}. {result}"
         )
+
+    @commands.command()
+    async def weather(self, ctx):
+        """Retrieve current weather using a webhook"""
+        url = "http://n8n.mrxlab.net/webhook/396e8d5d-80c3-4dfc-8760-7963eb2d9d6b"
+        try:
+            response = requests.get(url)
+            response.raise_for_status()  # Raise an exception for HTTP errors
+            data = response.json()
+            await ctx.send(f"Current weather: {data}")
+        except requests.RequestException as e:
+            await ctx.send(f"Failed to retrieve weather data: {e}")
 
 def setup(bot):
     bot.add_cog(MyCog(bot))
