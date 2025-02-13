@@ -1,3 +1,4 @@
+import random
 from redbot.core import commands
 
 class MyCog(commands.Cog):
