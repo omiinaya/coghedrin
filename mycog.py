@@ -51,7 +51,7 @@ class MyCog(commands.Cog):
             result = "It's a draw!"
         elif (user_choice == "rock" and opponent_choice == "scissors") or \
              (user_choice == "scissors" and opponent_choice == "paper") or \
-             (user_choice == "paper" and opponent_choice == "rock"):
+             (user_choice == "paper" and opponent.choice == "rock"):
             result = f"{ctx.author.mention} wins!"
         else:
             result = f"{opponent.mention} wins!"
@@ -101,44 +101,6 @@ class MyCog(commands.Cog):
         else:
             await ctx.send("Failed to retrieve data from the API.")
 
-    def format_eastern_america_data(self, data):
-        """Formats the Eastern Americas data with readable timestamps."""
-        formatted_message = "**Eastern Americas Weather Data**\n"
-        for forecast in data:
-            timestamp = forecast['ts']
-            condition = forecast['condition']
-            readable_time = datetime.fromtimestamp(timestamp // 1000).strftime('%I:%M %p')
-            formatted_message += f"- {readable_time}: {condition}\n"
-        return formatted_message
-
-    def get_current_weather(self, data):
-        """Determines the current weather type and time until the next weather type based on the provided data."""
-        current_time = datetime.now().timestamp()
-        current_weather = "Unknown"
-        time_until_next = "Unknown"
-        next_weather = "Unknown"
-        
-        for i, forecast in enumerate(data):
-            forecast_time = forecast['ts'] // 1000
-            if forecast_time <= current_time:
-                current_weather = forecast['condition'].replace("EWeatherType::", "")
-                if i + 1 < len(data):
-                    next_forecast_time = data[i + 1]['ts'] // 1000
-                    next_weather = data[i + 1]['condition'].replace("EWeatherType::", "")
-                    time_until_next_seconds = next_forecast_time - current_time
-                    hours, remainder = divmod(time_until_next_seconds, 3600)
-                    minutes = remainder // 60
-                    if hours > 0:
-                        time_until_next = f"{int(hours)} hours and {int(minutes)} minutes"
-                    else:
-                        time_until_next = f"{int(minutes)} minutes"
-                else:
-                    time_until_next = "N/A"
-            else:
-                break
-        
-        return current_weather, time_until_next, next_weather
-    
     @commands.command()
     async def timeofday(self, ctx):
         """Returns the current time of day for Eastern Americas and time until the next one."""
@@ -160,6 +122,36 @@ class MyCog(commands.Cog):
         else:
             await ctx.send("Failed to retrieve data from the API.")
 
+    def get_current_weather(self, data):
+        """Determines the current weather type and time until the next weather type based on the provided data."""
+        current_time = datetime.now().timestamp()
+        current_weather = "Unknown"
+        time_until_next = "Unknown"
+        next_weather = "Unknown"
+        
+        for i, forecast in enumerate(data):
+            forecast_time = forecast['ts'] // 1000
+            if forecast_time <= current_time:
+                current_weather = forecast['condition'].replace("EWeatherType::", "")
+                if i + 1 < len(data):
+                    next_forecast_time = data[i + 1]['ts'] // 1000
+                    next_weather = data[i + 1]['condition'].replace("EWeatherType::", "")
+                    time_until_next_seconds = next_forecast_time - current_time
+                    hours, remainder = divmod(time_until_next_seconds, 3600)
+                    minutes = remainder // 60
+                    if hours > 0:
+                        time_until_next = f"{int(hours)} hours and {int(minutes)} minutes"
+                    elif minutes > 0:
+                        time_until_next = f"{int(minutes)} minutes"
+                    else:
+                        time_until_next = f"{int(time_until_next_seconds)} seconds"
+                else:
+                    time_until_next = "N/A"
+            else:
+                break
+        
+        return current_weather, time_until_next, next_weather
+
     def get_current_time_of_day(self, data):
         """Determines the current time of day and time until the next one based on the provided data."""
         current_time = datetime.now().timestamp()
@@ -179,8 +171,10 @@ class MyCog(commands.Cog):
                     minutes = remainder // 60
                     if hours > 0:
                         time_until_next = f"{int(hours)} hours and {int(minutes)} minutes"
-                    else:
+                    elif minutes > 0:
                         time_until_next = f"{int(minutes)} minutes"
+                    else:
+                        time_until_next = f"{int(time_until_next_seconds)} seconds"
                 else:
                     time_until_next = "N/A"
             else:
