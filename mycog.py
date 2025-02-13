@@ -84,10 +84,10 @@ class MyCog(commands.Cog):
                 await ctx.send(message)
         else:
             await ctx.send("Failed to retrieve data from the API.")
-
+    
     @commands.command()
-    async def eastern_america(self, ctx):
-        """Returns the Eastern Americas data with readable timestamps."""
+    async def current_weather(self, ctx):
+        """Returns the current weather type for Eastern Americas."""
         url = os.getenv('WEATHER_API')
         response = requests.get(url)
         
@@ -97,7 +97,8 @@ class MyCog(commands.Cog):
             if 'application/json' in content_type:
                 data = response.json()
                 eastern_america_data = data[0]['data']['Eastern Americas']
-                message = self.format_eastern_america_data(eastern_america_data)
+                current_weather = self.get_current_weather(eastern_america_data)
+                message = f"Current weather in Eastern Americas: {current_weather}"
             else:
                 message = "The API did not return JSON data."
             
@@ -114,6 +115,20 @@ class MyCog(commands.Cog):
             readable_time = datetime.fromtimestamp(timestamp // 1000).strftime('%I:%M %p')
             formatted_message += f"- {readable_time}: {condition}\n"
         return formatted_message
+
+    def get_current_weather(self, data):
+        """Determines the current weather type based on the provided data."""
+        current_time = datetime.now().timestamp()
+        current_weather = "Unknown"
+        
+        for forecast in data:
+            forecast_time = forecast['ts'] // 1000
+            if forecast_time <= current_time:
+                current_weather = forecast['condition']
+            else:
+                break
+        
+        return current_weather
 
 def setup(bot):
     bot.add_cog(MyCog(bot))
