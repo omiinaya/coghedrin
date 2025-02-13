@@ -57,7 +57,7 @@ class MyCog(commands.Cog):
     @commands.command()
     async def apicall(self, ctx):
         """Makes an API call and returns the response."""
-        url = "http://n8n.mrxlab.net/webhook/396e8d5d-80c3-4dfc-8760-7963eb2d9d6b"  # Replace with your API endpoint
+        url = "http://n8n.mrxlab.net/webhook/6f7b288e-1efe-4504-a6fd-660931327269"  # Replace with your API endpoint
         response = requests.get(url)
         
         if response.status_code == 200:
