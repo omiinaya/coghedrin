@@ -114,7 +114,7 @@ class MyCog(commands.Cog):
                 data = response.json()
                 eastern_america_data = data[0]['data']['Eastern Americas']
                 current_time_of_day, time_until_next, next_time_of_day = self.get_current_time_of_day(eastern_america_data)
-                message = f"Current time of day is '{current_time_of_day}'. Time until '{next_time_of_day}' is {time_until_next}."
+                message = f"Current cycle of the day is '{current_time_of_day}'. Time until '{next_time_of_day}' is {time_until_next}."
             else:
                 message = "The API did not return JSON data."
             
