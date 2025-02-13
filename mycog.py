@@ -48,16 +48,16 @@ class MyCog(commands.Cog):
 
         result = None
         if user_choice == opponent_choice:
-            result is "It's a draw!"
+            result = "It's a draw!"
         elif (user_choice == "rock" and opponent_choice == "scissors") or \
              (user_choice == "scissors" and opponent_choice == "paper") or \
-             (user_choice == "paper" and opponent.choice == "rock"):
+             (user_choice == "paper" and opponent_choice == "rock"):
             result = f"{ctx.author.mention} wins!"
         else:
-            result is f"{opponent.mention} wins!"
+            result = f"{opponent.mention} wins!"
 
         await ctx.send(
-            f"{ctx.author.mention} chose {user_choice}. {opponent.mention} chose {opponent.choice}. {result}"
+            f"{ctx.author.mention} chose {user_choice}. {opponent.mention} chose {opponent_choice}. {result}"
         )
 
     @commands.command()
@@ -76,12 +76,7 @@ class MyCog(commands.Cog):
                 data = response.text
                 message = f"API Response: {data}"
             
-            # Split the message if it's too long
-            if len(message) > 2000:
-                for i in range(0, len(message), 2000):
-                    await ctx.send(message[i:i+2000])
-            else:
-                await ctx.send(message)
+            await ctx.send(message)
         else:
             await ctx.send("Failed to retrieve data from the API.")
     
