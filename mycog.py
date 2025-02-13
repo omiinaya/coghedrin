@@ -231,6 +231,7 @@ class MyCog(commands.Cog):
     async def measure(self, ctx):
         """Responds randomly with 1 - 14 inches, unless the caller's nickname is 'Sullen' in which case the response should be from 8-14 inches."""
         nickname = ctx.author.display_name
+        ### calm down, it's for the memes
         if nickname.lower() == 'sullen':
             measurement = random.randint(8, 14)
         else:
