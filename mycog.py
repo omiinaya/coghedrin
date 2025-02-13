@@ -51,7 +51,7 @@ class MyCog(commands.Cog):
             result = "It's a draw!"
         elif (user_choice == "rock" and opponent_choice == "scissors") or \
              (user_choice == "scissors" and opponent_choice == "paper") or \
-             (user_choice == "paper" and opponent.choice == "rock"):
+             (user_choice == "paper" and opponent_choice == "rock"):
             result = f"{ctx.author.mention} wins!"
         else:
             result = f"{opponent.mention} wins!"
@@ -114,13 +114,58 @@ class MyCog(commands.Cog):
                 data = response.json()
                 eastern_america_data = data[0]['data']['Eastern Americas']
                 current_time_of_day, time_until_next, next_time_of_day = self.get_current_time_of_day(eastern_america_data)
-                message = f"Current cycle of the day is '{current_time_of_day}'. Time until '{next_time_of_day}' is {time_until_next}."
+                message = f"Current time of day is '{current_time_of_day}'. Time until '{next_time_of_day}' is {time_until_next}."
             else:
                 message = "The API did not return JSON data."
             
             await ctx.send(message)
         else:
             await ctx.send("Failed to retrieve data from the API.")
+
+    @commands.command()
+    async def when(self, ctx, condition: str):
+        """Tells how long until the specified condition (day, night, normal, rain) or if it's already that condition."""
+        condition = condition.lower()
+        if condition not in ["day", "night", "normal", "rain"]:
+            await ctx.send("Invalid condition. Please choose from 'day', 'night', 'normal', or 'rain'.")
+            return
+
+        if condition in ["day", "night"]:
+            url = os.getenv('DAYNIGHT_API')
+            response = requests.get(url)
+            if response.status_code == 200:
+                content_type = response.headers.get('Content-Type')
+                if 'application/json' in content_type:
+                    data = response.json()
+                    eastern_america_data = data[0]['data']['Eastern Americas']
+                    current_time_of_day, time_until_next, next_time_of_day = self.get_current_time_of_day(eastern_america_data)
+                    if current_time_of_day.lower() == condition:
+                        message = f"It's currently '{condition}' already."
+                    else:
+                        message = f"Time until '{condition}' is {time_until_next}."
+                else:
+                    message = "The API did not return JSON data."
+            else:
+                message = "Failed to retrieve data from the API."
+        else:
+            url = os.getenv('WEATHER_API')
+            response = requests.get(url)
+            if response.status_code == 200:
+                content_type = response.headers.get('Content-Type')
+                if 'application/json' in content_type:
+                    data = response.json()
+                    eastern_america_data = data[0]['data']['Eastern Americas']
+                    current_weather, time_until_next, next_weather = self.get_current_weather(eastern_america_data)
+                    if current_weather.lower() == condition:
+                        message = f"It's currently '{condition}' already."
+                    else:
+                        message = f"Time until '{condition}' is {time_until_next}."
+                else:
+                    message = "The API did not return JSON data."
+            else:
+                message = "Failed to retrieve data from the API."
+
+        await ctx.send(message)
 
     def get_current_weather(self, data):
         """Determines the current weather type and time until the next weather type based on the provided data."""
