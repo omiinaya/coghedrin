@@ -1,5 +1,7 @@
 import requests
 from redbot.core import commands
+import http.client
+import json
 
 class MyCog(commands.Cog):
     """My custom cog"""
@@ -54,16 +56,18 @@ class MyCog(commands.Cog):
         )
 
     @commands.command()
-    async def weather(self, ctx):
-        """Retrieve current weather using a webhook"""
-        url = "http://n8n.mrxlab.net/webhook/396e8d5d-80c3-4dfc-8760-7963eb2d9d6b"
-        try:
-            response = requests.get(url)
-            response.raise_for_status()  # Raise an exception for HTTP errors
-            data = response.json()
-            await ctx.send(f"Current weather: {data}")
-        except requests.RequestException as e:
-            await ctx.send(f"Failed to retrieve weather data: {e}")
+    async def fetchdata(self, ctx):
+        conn = http.client.HTTPSConnection("http://n8n.mrxlab.net/webhook/396e8d5d-80c3-4dfc-8760-7963eb2d9d6b")
+        conn.request("GET", "/data")
+        response = conn.getresponse()
+        if response.status == 200:
+            data = json.loads(response.read())
+            await ctx.send(f"Data: {data}")
+        else:
+            await ctx.send(f"Failed to fetch data. Status code: {response.status}")
+        conn.close()
+
+
 
 def setup(bot):
     bot.add_cog(MyCog(bot))
