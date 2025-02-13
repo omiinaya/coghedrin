@@ -138,6 +138,55 @@ class MyCog(commands.Cog):
                 break
         
         return current_weather, time_until_next, next_weather
+    
+    @commands.command()
+    async def timeofday(self, ctx):
+        """Returns the current time of day for Eastern Americas and time until the next one."""
+        url = os.getenv('DAYNIGHT_API')
+        response = requests.get(url)
+        
+        if response.status_code == 200:
+            content_type = response.headers.get('Content-Type')
+            
+            if 'application/json' in content_type:
+                data = response.json()
+                eastern_america_data = data[0]['data']['Eastern Americas']
+                current_time_of_day, time_until_next, next_time_of_day = self.get_current_time_of_day(eastern_america_data)
+                message = f"Current time of day is '{current_time_of_day}'. Time until '{next_time_of_day}' is {time_until_next}."
+            else:
+                message = "The API did not return JSON data."
+            
+            await ctx.send(message)
+        else:
+            await ctx.send("Failed to retrieve data from the API.")
+
+    def get_current_time_of_day(self, data):
+        """Determines the current time of day and time until the next one based on the provided data."""
+        current_time = datetime.now().timestamp()
+        current_time_of_day = "Unknown"
+        time_until_next = "Unknown"
+        next_time_of_day = "Unknown"
+        
+        for i, forecast in enumerate(data):
+            forecast_time = forecast['ts'] // 1000
+            if forecast_time <= current_time:
+                current_time_of_day = forecast['condition']
+                if i + 1 < len(data):
+                    next_forecast_time = data[i + 1]['ts'] // 1000
+                    next_time_of_day = data[i + 1]['condition']
+                    time_until_next_seconds = next_forecast_time - current_time
+                    hours, remainder = divmod(time_until_next_seconds, 3600)
+                    minutes = remainder // 60
+                    if hours > 0:
+                        time_until_next = f"{int(hours)} hours and {int(minutes)} minutes"
+                    else:
+                        time_until_next = f"{int(minutes)} minutes"
+                else:
+                    time_until_next = "N/A"
+            else:
+                break
+        
+        return current_time_of_day, time_until_next, next_time_of_day
 
 def setup(bot):
     bot.add_cog(MyCog(bot))
