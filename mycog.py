@@ -15,19 +15,9 @@ class MyCog(commands.Cog):
         self.bot = bot
 
     @commands.command()
-    async def mycom(self, ctx):
-        """This does stuff!"""
-        await ctx.send("I can do stuff!")
-
-    @commands.command()
     async def pinghedrin(self, ctx):
         """This pongs when you ping"""
         await ctx.send("Pong!")
-
-    @commands.command()
-    async def rain(self, ctx):
-        """This shows when it will rain next"""
-        await ctx.send("Soon!")
 
     @commands.command()
     async def dice(self, ctx):
@@ -229,14 +219,8 @@ class MyCog(commands.Cog):
     
     @commands.command()
     async def measure(self, ctx):
-        """Responds randomly with 1 - 14 inches, unless the caller's nickname is 'Sullen' in which case the response should be from 8-14 inches."""
-        nickname = ctx.author.display_name
-        ### calm down, it's for the memes
-        if nickname.lower() == 'sullen':
-            measurement = random.randint(8, 14)
-        else:
-            measurement = random.randint(1, 14)
-        
+        """Responds randomly with 1 - 14 inches."""
+        measurement = random.randint(1, 14)
         await ctx.send(f"{ctx.author.mention}, you measured {measurement} inches.")
 
 def setup(bot):
