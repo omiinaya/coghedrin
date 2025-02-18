@@ -16,6 +16,11 @@ class MyCog(commands.Cog):
     async def mycom(self, ctx):
         """This does stuff!"""
         await ctx.send("I can do stuff!")
+        
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        if self.bot.user.mentioned_in(message) and not message.author.bot:
+            await message.channel.send("Hello, this is a test response.")
 
     @commands.command()
     async def apicall(self, ctx):
