@@ -1,6 +1,7 @@
 import random
 import requests
 import os
+import discord
 from dotenv import load_dotenv
 from redbot.core import commands
 from datetime import datetime
@@ -228,6 +229,15 @@ class MyCog(commands.Cog):
         """Responds randomly with 1 - 14 inches."""
         measurement = random.randint(1, 14)
         await ctx.send(f"{ctx.author.mention}, you measured {measurement} inches.")
+        
+    @commands.command()
+    async def secret(self, ctx):
+        """Sends a secret message to the user who invoked the command."""
+        try:
+            await ctx.author.send("This is a secret message just for you!")
+            await ctx.send(f"{ctx.author.mention}, check your DMs!")
+        except discord.Forbidden:
+            await ctx.send(f"{ctx.author.mention}, I couldn't send you a DM. Please check your privacy settings.")
             
     @commands.Cog.listener()
     async def on_message(self, message):
