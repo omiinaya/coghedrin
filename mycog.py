@@ -242,6 +242,16 @@ class MyCog(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message):
         if self.bot.user.mentioned_in(message) and not message.author.bot:
+            content = message.content.lower()
+            if content.startswith("should i"):
+                options = content.split(" or ")
+                if len(options) == 2:
+                    choice = random.choice(options).replace(f"@{self.bot.user.name.lower()} should i ", "")
+                    await message.channel.send(choice)
+            
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        if self.bot.user.mentioned_in(message) and not message.author.bot:
             if "ping" in message.content.lower():
                 await message.channel.send("pong")
 
