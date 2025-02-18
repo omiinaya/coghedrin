@@ -20,9 +20,15 @@ class MyCog(commands.Cog):
         await ctx.send("Pong!")
 
     @commands.command()
-    async def dice(self, ctx):
+    async def roll(self, ctx):
         """This rolls from 1-100"""
         random_number = random.randint(1, 100)
+        await ctx.send(f"{ctx.author.mention}, you rolled a {random_number}")
+        
+    @commands.command()
+    async def dice(self, ctx):
+        """This rolls from 1-6"""
+        random_number = random.randint(1, 6)
         await ctx.send(f"{ctx.author.mention}, you rolled a {random_number}")
 
     @commands.command()
