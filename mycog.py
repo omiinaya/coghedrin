@@ -228,6 +228,11 @@ class MyCog(commands.Cog):
         """Responds randomly with 1 - 14 inches."""
         measurement = random.randint(1, 14)
         await ctx.send(f"{ctx.author.mention}, you measured {measurement} inches.")
+        
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        if self.bot.user.mentioned_in(message) and not message.author.bot:
+            await message.channel.send("Hello, this is a test response.")
 
 def setup(bot):
     bot.add_cog(MyCog(bot))
