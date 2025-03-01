@@ -244,6 +244,25 @@ class MyCog(commands.Cog):
         if self.bot.user.mentioned_in(message) and not message.author.bot:
             if "ping" in message.content.lower():
                 await message.channel.send("pong")
+                
+    @commands.command()
+    async def roulette(self, ctx):
+        """Play text-based Russian roulette where you have a 1/6 chance to die"""
+        
+        try:
+		    # Determine outcome based on fixed probability
+            outcome = random.randint(1, 6)
+		        
+            if outcome == 6:
+                # 1/6 chance to die
+                await ctx.send("You died! Better luck next time.")
+            else:
+		        # 5/6 chance to survive
+                await ctx.send("You survived!")
+		            
+        except Exception as e:
+            await ctx.send(f"Error in roulette command: {str(e)}")
+            return
 
 def setup(bot):
     bot.add_cog(MyCog(bot))
