@@ -274,15 +274,16 @@ class MyCog(commands.Cog):
         
         try:
             outcome = random.randint(1, 2)
-            # Determine outcome based on user's bet
-            if bet_on.lower() == "even" and outcome == 2:
-                await ctx.send(f"You won! ({outcome})")
-            elif bet_on.lower() == "even" and outcome == 1:
-                await ctx.send(f"You lost. ({outcome})")
-            elif bet_on.lower() == "odd" and outcome == 1:
-                await ctx.send(f"You won! ({outcome})") 
+            if outcome == 1:
+                result = "odd"
             else:
-                await ctx.send(f"You lost. ({outcome})")
+                result = "even"
+
+            # Determine outcome based on user's bet
+            if bet_on.lower() == result:
+                await ctx.send(f"You won! ({result})")
+            else:
+                await ctx.send(f"You lost. ({result})")
                 return
                 
         except Exception as e:
