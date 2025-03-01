@@ -255,10 +255,10 @@ class MyCog(commands.Cog):
             
             if outcome == 6:
                 # 1/6 chance to die
-                await ctx.send(f"There was a bullet in the chamber and you are now dead. ({outcome}.")
+                await ctx.send(f"You are dead. ({outcome}).")
             else:
                 # 5/6 chance to survive and show the roll number
-                await ctx.send(f"There was no bullet in the chamnber and you have survived! ({outcome}).")
+                await ctx.send(f"You have survived! ({outcome}).")
                 
         except Exception as e:
             await ctx.send(f"Error in roulette command: {str(e)}")
