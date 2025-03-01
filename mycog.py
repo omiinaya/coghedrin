@@ -255,15 +255,39 @@ class MyCog(commands.Cog):
             
             if outcome == 6:
                 # 1/6 chance to die
-                await ctx.send(f"You are dead. ({outcome}).")
+                await ctx.send(f"You are dead. ({outcome})")
             else:
                 # 5/6 chance to survive and show the roll number
-                await ctx.send(f"You have survived! ({outcome}).")
+                await ctx.send(f"You have survived! ({outcome})")
                 
         except Exception as e:
             await ctx.send(f"Error in roulette command: {str(e)}")
             return
 
+    @commands.command()
+    async def coinflip(self, ctx, bet_on: str = None):
+        """Play text-based coin flip game"""
+        
+        if not bet_on:
+            await ctx.send("Please specify either 'even' or 'odd'.")
+            return
+        
+        try:
+            outcome = random.randint(1, 2)
+            # Determine outcome based on user's bet
+            if bet_on.lower() == "even" and outcome == 2:
+                await ctx.send(f"You won! ({outcome})")
+            elif bet_on.lower() == "even" and outcome == 1:
+                await ctx.send(f"You lost. ({outcome})")
+            elif bet_on.lower() == "odd" and outcome == 1:
+                await ctx.send(f"You won! ({outcome})") 
+            else:
+                await ctx.send(f"You lost. ({outcome})")
+                return
+                
+        except Exception as e:
+            await ctx.send(f"Error in coinflip command: {str(e)}")
+            return
 
 def setup(bot):
     bot.add_cog(MyCog(bot))
