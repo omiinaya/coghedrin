@@ -268,7 +268,7 @@ class MyCog(commands.Cog):
     async def slots(self, ctx):
         """Play a slot machine game with Discord emojis"""
         # Define the slot machine emojis
-        emojis = [":cherries:", ":lemon:", ":orange:", ":grapes:", ":seven:", ":bell:"]
+        emojis = [":cherries:", ":lemon:", ":strawberry:", ":grapes:", ":seven:", ":bell:"]
         
         # Spin the slots
         slot1 = random.choice(emojis)
