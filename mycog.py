@@ -311,6 +311,15 @@ class MyCog(commands.Cog):
         except Exception as e:
             await ctx.send(f"Error in coinflip command: {str(e)}")
             return
+            
+    @commands.command()
+    async def decide(self, ctx):
+        if random.random() < 0.5:
+            await ctx.send("yes")
+        else:
+            await ctx.send("no")
 
 def setup(bot):
     bot.add_cog(MyCog(bot))
+
+    
