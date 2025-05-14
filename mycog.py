@@ -265,6 +265,28 @@ class MyCog(commands.Cog):
             return
 
     @commands.command()
+    async def slots(self, ctx):
+        """Play a slot machine game with Discord emojis"""
+        # Define the slot machine emojis
+        emojis = [":cherries:", ":lemon:", ":orange:", ":grapes:", ":seven:", ":bell:"]
+        
+        # Spin the slots
+        slot1 = random.choice(emojis)
+        slot2 = random.choice(emojis)
+        slot3 = random.choice(emojis)
+        
+        # Display the result
+        result = f"{slot1} | {slot2} | {slot3}"
+        
+        # Check for a win (all three slots are the same)
+        if slot1 == slot2 == slot3:
+            message = f"{ctx.author.mention}, Jackpot! You won!"
+        else:
+            message = f"{ctx.author.mention}, Better luck next time!"
+        
+        await ctx.send(f"{result}\n{message}")
+
+    @commands.command()
     async def coinflip(self, ctx, bet_on: str = None):
         """Play text-based coin flip game"""
         
