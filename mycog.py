@@ -319,5 +319,14 @@ class MyCog(commands.Cog):
         else:
             await ctx.send("no")
 
+    @commands.command()
+    async def balding(self, ctx):
+        """Returns a random balding percentage."""
+        percent = random.randint(0, 100)
+        if percent == 0:
+            await ctx.send("Congratz! You're not balding.")
+        else:
+            await ctx.send(f"{ctx.author.mention} is {percent}% balding. o7")
+
 def setup(bot):
     bot.add_cog(MyCog(bot))
