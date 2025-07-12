@@ -43,7 +43,7 @@ LOCALES = {
         'desc_slots': 'Play a slot machine game with Discord emojis.',
         'desc_coinflip': 'Play text-based coin flip game.',
         'desc_decide': 'Randomly decide yes or no.',
-        'desc_balding': 'Returns a random balding percentage.",
+        'desc_balding': 'Returns a random balding percentage.'
     },
     'es': {
         'pong': '¡Pong!',
