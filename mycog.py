@@ -15,22 +15,31 @@ from .localization import t
 load_dotenv()
 logger = logging.getLogger("red.coghedrin.mycog")
 
+# Check for required environment variables at startup
+REQUIRED_ENV_VARS = ["SAMPLE_API", "WEATHER_API", "DAYNIGHT_API"]
+for var in REQUIRED_ENV_VARS:
+    if not os.getenv(var):
+        logger.warning(f"Environment variable {var} is not set. Some commands may not work.")
+
 class MyCog(commands.Cog):
     """My custom cog with fun commands and best practices."""
 
-    def __init__(self, bot):
+    def __init__(self, bot: commands.Bot):
         self.bot = bot
+        logger.info("MyCog loaded and initialized.")
 
     @commands.command()
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def pinghedrin(self, ctx: commands.Context, lang: str = 'en') -> None:
         """Responds with Pong! for health check. (5s cooldown per user, supports localization)"""
+        logger.info(f"pinghedrin called by {ctx.author}")
         await ctx.send(t('pong', lang=lang))
 
     @commands.command()
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def roll(self, ctx: commands.Context, lang: str = 'en') -> None:
         """Roll a random number from 1-100. (5s cooldown per user, supports localization)"""
+        logger.info(f"roll called by {ctx.author}")
         random_number = random.randint(1, 100)
         await ctx.send(t('roll', lang=lang, user=ctx.author.mention, number=random_number))
 
@@ -38,6 +47,7 @@ class MyCog(commands.Cog):
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def dice(self, ctx: commands.Context) -> None:
         """Roll a random number from 1-6. (5s cooldown per user)"""
+        logger.info(f"dice called by {ctx.author}")
         random_number = random.randint(1, 6)
         await ctx.send(f"{ctx.author.mention}, you rolled a {random_number}")
 
@@ -45,6 +55,7 @@ class MyCog(commands.Cog):
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def rps(self, ctx: commands.Context, opponent: commands.MemberConverter) -> None:
         """Play Rock-Paper-Scissors against another player. (10s cooldown per user)"""
+        logger.info(f"rps called by {ctx.author} vs {opponent}")
         try:
             valid, error = is_valid_member(ctx, opponent)
             if not valid:
@@ -55,15 +66,15 @@ class MyCog(commands.Cog):
             opponent_choice = random.choice(choices)
             result = None
             if user_choice == opponent_choice:
-                result = "It's a draw!"
+                result = t('draw', lang='en')
             elif (user_choice == "rock" and opponent_choice == "scissors") or \
                  (user_choice == "scissors" and opponent_choice == "paper") or \
                  (user_choice == "paper" and opponent_choice == "rock"):
-                result = f"{ctx.author.mention} wins!"
+                result = t('user_win', lang='en', user=ctx.author.mention)
             else:
-                result = f"{opponent.mention} wins!"
+                result = t('opponent_win', lang='en', opponent=opponent.mention)
             await ctx.send(
-                f"{ctx.author.mention} chose {user_choice}. {opponent.mention} chose {opponent_choice}. {result}"
+                t('rps_result', lang='en', user=ctx.author.mention, user_choice=user_choice, opponent=opponent.mention, opponent_choice=opponent_choice, result=result)
             )
         except Exception as e:
             logger.error(f"Error in rps command: {e}")
@@ -73,9 +84,10 @@ class MyCog(commands.Cog):
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def apicall(self, ctx: commands.Context, url: Optional[str] = None) -> None:
         """Makes an API call and returns the response. Optionally takes a URL argument. (10s cooldown per user)"""
+        logger.info(f"apicall called by {ctx.author} with url={url}")
         api_url = url or os.getenv('SAMPLE_API')
         if not api_url or not api_url.startswith(('http://', 'https://')):
-            await ctx.send("API URL not configured or invalid. Please set SAMPLE_API in your .env file or provide a valid URL.")
+            await ctx.send(t('api_url_invalid', lang='en'))
             return
         try:
             response = requests.get(api_url, timeout=10)
@@ -84,21 +96,21 @@ class MyCog(commands.Cog):
                 content_type = response.headers.get('Content-Type', '')
                 if 'application/json' in content_type:
                     data = response.json()
-                    message = f"API Response: {data}"
+                    message = t('api_response', lang='en', data=data)
                 else:
                     data = response.text
-                    message = f"API Response: {data}"
+                    message = t('api_response', lang='en', data=data)
                 if len(message) > 1800:
                     message = message[:1800] + '... (truncated)'
                 await ctx.send(message)
             else:
-                await ctx.send(f"Failed to retrieve data from the API. Status: {response.status_code}")
+                await ctx.send(t('api_failed', lang='en', status=response.status_code))
         except requests.RequestException as e:
             logger.error(f"API call failed: {e}")
-            await ctx.send(f"API call failed: {e}")
+            await ctx.send(t('api_failed_exception', lang='en', error=e))
         except Exception as e:
             logger.error(f"Unexpected error in apicall: {e}")
-            await ctx.send(f"Unexpected error: {e}")
+            await ctx.send(t('unexpected_error', lang='en', error=e))
     
     @commands.command()
     async def weather(self, ctx):
@@ -226,102 +238,108 @@ class MyCog(commands.Cog):
         await ctx.send(f"{ctx.author.mention}, you measured {measurement} inches.")
         
     @commands.command()
-    async def secret(self, ctx):
+    async def secret(self, ctx: commands.Context) -> None:
         """Sends a secret message to the user who invoked the command."""
+        logger.info(f"secret called by {ctx.author}")
         try:
-            await ctx.author.send("This is a secret message just for you!")
-            await ctx.send(f"{ctx.author.mention}, check your DMs!")
+            await ctx.author.send(t('secret_dm', lang='en'))
+            await ctx.send(t('secret_check_dm', lang='en', user=ctx.author.mention))
         except discord.Forbidden:
-            await ctx.send(f"{ctx.author.mention}, I couldn't send you a DM. Please check your privacy settings.")
+            await ctx.send(t('secret_dm_fail', lang='en', user=ctx.author.mention))
             
     @commands.Cog.listener()
-    async def on_message(self, message):
+    async def on_message(self, message: discord.Message) -> None:
         if self.bot.user.mentioned_in(message) and not message.author.bot:
             if "ping" in message.content.lower():
-                await message.channel.send("pong")
+                logger.info(f"on_message: ping detected from {message.author}")
+                await message.channel.send(t('pong', lang='en'))
                 
     @commands.command()
-    async def roulette(self, ctx):
-        """Play text-based Russian roulette where you have a 1/6 chance to die"""
-        
+    async def roulette(self, ctx: commands.Context) -> None:
+        """Play text-based Russian roulette where you have a 1/6 chance to die."""
+        logger.info(f"roulette called by {ctx.author}")
         try:
-            # Determine outcome based on fixed probability
             outcome = random.randint(1, 6)
-            
             if outcome == 6:
-                # 1/6 chance to die
-                await ctx.send(f"You are dead. ({outcome})")
+                await ctx.send(t('roulette_dead', lang='en', outcome=outcome))
             else:
-                # 5/6 chance to survive and show the roll number
-                await ctx.send(f"You have survived! ({outcome})")
-                
+                await ctx.send(t('roulette_survive', lang='en', outcome=outcome))
         except Exception as e:
-            await ctx.send(f"Error in roulette command: {str(e)}")
-            return
+            logger.error(f"Error in roulette command: {e}")
+            await ctx.send(t('roulette_error', lang='en', error=e))
 
     @commands.command()
-    async def slots(self, ctx):
-        """Play a slot machine game with Discord emojis"""
-        # Define the slot machine emojis
+    async def slots(self, ctx: commands.Context) -> None:
+        """Play a slot machine game with Discord emojis."""
+        logger.info(f"slots called by {ctx.author}")
         emojis = [":cherries:", ":lemon:", ":strawberry:", ":grapes:", ":seven:", ":bell:"]
-        
-        # Spin the slots
         slot1 = random.choice(emojis)
         slot2 = random.choice(emojis)
         slot3 = random.choice(emojis)
-        
-        # Display the result
         result = f"{slot1} | {slot2} | {slot3}"
-        
-        # Check for a win (all three slots are the same)
         if slot1 == slot2 == slot3:
-            message = f"{ctx.author.mention}, Jackpot! You won!"
+            message = t('slots_jackpot', lang='en', user=ctx.author.mention)
         else:
-            message = f"{ctx.author.mention}, Better luck next time!"
-        
+            message = t('slots_lose', lang='en', user=ctx.author.mention)
         await ctx.send(f"{result}\n{message}")
 
     @commands.command()
-    async def coinflip(self, ctx, bet_on: str = None):
-        """Play text-based coin flip game"""
-        
+    async def coinflip(self, ctx: commands.Context, bet_on: Optional[str] = None) -> None:
+        """Play text-based coin flip game."""
+        logger.info(f"coinflip called by {ctx.author} with bet_on={bet_on}")
         if not bet_on:
-            await ctx.send("Please specify either 'even' or 'odd'.")
+            await ctx.send(t('coinflip_specify', lang='en'))
             return
-        
         try:
             outcome = random.randint(1, 2)
-            if outcome == 1:
-                result = "odd"
-            else:
-                result = "even"
-
-            # Determine outcome based on user's bet
+            result = "odd" if outcome == 1 else "even"
             if bet_on.lower() == result:
-                await ctx.send(f"You won! ({result})")
+                await ctx.send(t('coinflip_win', lang='en', result=result))
             else:
-                await ctx.send(f"You lost. ({result})")
-                return
-                
+                await ctx.send(t('coinflip_lose', lang='en', result=result))
         except Exception as e:
-            await ctx.send(f"Error in coinflip command: {str(e)}")
-            return
+            logger.error(f"Error in coinflip command: {e}")
+            await ctx.send(t('coinflip_error', lang='en', error=e))
 
     @commands.command()
-    async def decide(self, ctx):
-        if random.random() < 0.5:
-            await ctx.send("yes")
-        else:
-            await ctx.send("no")
+    async def decide(self, ctx: commands.Context) -> None:
+        """Randomly decide yes or no."""
+        logger.info(f"decide called by {ctx.author}")
+        await ctx.send(t('decide_yes', lang='en') if random.random() < 0.5 else t('decide_no', lang='en'))
 
     @commands.command()
-    async def balding(self, ctx):
+    async def balding(self, ctx: commands.Context) -> None:
         """Returns a random balding percentage."""
+        logger.info(f"balding called by {ctx.author}")
         percent = random.randint(0, 100)
         if percent == 0:
-            await ctx.send("Congratz! You're not balding.")
+            await ctx.send(t('balding_none', lang='en'))
         else:
-            await ctx.send(f"{ctx.author.mention} is {percent}% balding. o7")
+            await ctx.send(t('balding_percent', lang='en', user=ctx.author.mention, percent=percent))
 
-def setup(bot):
-    bot.add_cog(MyCog(bot))
+    @commands.command()
+    async def commands(self, ctx: commands.Context, lang: str = 'en') -> None:
+        """Lists all available commands and their descriptions."""
+        logger.info(f"commands called by {ctx.author}")
+        cmds = [
+            ("pinghedrin", t('desc_pinghedrin', lang=lang)),
+            ("roll", t('desc_roll', lang=lang)),
+            ("dice", t('desc_dice', lang=lang)),
+            ("rps", t('desc_rps', lang=lang)),
+            ("apicall", t('desc_apicall', lang=lang)),
+            ("weather", t('desc_weather', lang=lang)),
+            ("timeofday", t('desc_timeofday', lang=lang)),
+            ("when", t('desc_when', lang=lang)),
+            ("measure", t('desc_measure', lang=lang)),
+            ("secret", t('desc_secret', lang=lang)),
+            ("roulette", t('desc_roulette', lang=lang)),
+            ("slots", t('desc_slots', lang=lang)),
+            ("coinflip", t('desc_coinflip', lang=lang)),
+            ("decide", t('desc_decide', lang=lang)),
+            ("balding", t('desc_balding', lang=lang)),
+        ]
+        msg = "**Available Commands:**\n" + "\n".join([f"`{name}`: {desc}" for name, desc in cmds])
+        await ctx.send(msg)
+
+async def setup(bot: commands.Bot) -> None:
+    await bot.add_cog(MyCog(bot))
