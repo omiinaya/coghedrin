@@ -5,163 +5,158 @@ import discord
 from dotenv import load_dotenv
 from redbot.core import commands
 from datetime import datetime
+import logging
+from typing import Optional
+from .utils import is_valid_member
+from .api_helpers import fetch_json
+from .localization import t
 
 # Load environment variables from .env file
 load_dotenv()
+logger = logging.getLogger("red.coghedrin.mycog")
 
 class MyCog(commands.Cog):
-    """My custom cog"""
+    """My custom cog with fun commands and best practices."""
 
     def __init__(self, bot):
         self.bot = bot
 
     @commands.command()
-    async def pinghedrin(self, ctx):
-        """This pongs when you ping"""
-        await ctx.send("Pong!")
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def pinghedrin(self, ctx: commands.Context, lang: str = 'en') -> None:
+        """Responds with Pong! for health check. (5s cooldown per user, supports localization)"""
+        await ctx.send(t('pong', lang=lang))
 
     @commands.command()
-    async def roll(self, ctx):
-        """This rolls from 1-100"""
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def roll(self, ctx: commands.Context, lang: str = 'en') -> None:
+        """Roll a random number from 1-100. (5s cooldown per user, supports localization)"""
         random_number = random.randint(1, 100)
-        await ctx.send(f"{ctx.author.mention}, you rolled a {random_number}")
-        
+        await ctx.send(t('roll', lang=lang, user=ctx.author.mention, number=random_number))
+
     @commands.command()
-    async def dice(self, ctx):
-        """This rolls from 1-6"""
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def dice(self, ctx: commands.Context) -> None:
+        """Roll a random number from 1-6. (5s cooldown per user)"""
         random_number = random.randint(1, 6)
         await ctx.send(f"{ctx.author.mention}, you rolled a {random_number}")
 
     @commands.command()
-    async def rps(self, ctx, opponent: commands.MemberConverter):
-        """Play Rock-Paper-Scissors against another player"""
-        if opponent == ctx.author:
-            await ctx.send("You can't play against yourself!")
-            return
-
-        choices = ["rock", "paper", "scissors"]
-        user_choice = random.choice(choices)
-        opponent_choice = random.choice(choices)
-
-        result = None
-        if user_choice == opponent_choice:
-            result = "It's a draw!"
-        elif (user_choice == "rock" and opponent_choice == "scissors") or \
-             (user_choice == "scissors" and opponent_choice == "paper") or \
-             (user_choice == "paper" and opponent_choice == "rock"):
-            result = f"{ctx.author.mention} wins!"
-        else:
-            result = f"{opponent.mention} wins!"
-
-        await ctx.send(
-            f"{ctx.author.mention} chose {user_choice}. {opponent.mention} chose {opponent_choice}. {result}"
-        )
+    @commands.cooldown(1, 10, commands.BucketType.user)
+    async def rps(self, ctx: commands.Context, opponent: commands.MemberConverter) -> None:
+        """Play Rock-Paper-Scissors against another player. (10s cooldown per user)"""
+        try:
+            valid, error = is_valid_member(ctx, opponent)
+            if not valid:
+                await ctx.send(error)
+                return
+            choices = ["rock", "paper", "scissors"]
+            user_choice = random.choice(choices)
+            opponent_choice = random.choice(choices)
+            result = None
+            if user_choice == opponent_choice:
+                result = "It's a draw!"
+            elif (user_choice == "rock" and opponent_choice == "scissors") or \
+                 (user_choice == "scissors" and opponent_choice == "paper") or \
+                 (user_choice == "paper" and opponent_choice == "rock"):
+                result = f"{ctx.author.mention} wins!"
+            else:
+                result = f"{opponent.mention} wins!"
+            await ctx.send(
+                f"{ctx.author.mention} chose {user_choice}. {opponent.mention} chose {opponent_choice}. {result}"
+            )
+        except Exception as e:
+            logger.error(f"Error in rps command: {e}")
+            await ctx.send(f"Error: {e}")
 
     @commands.command()
-    async def apicall(self, ctx):
-        """Makes an API call and returns the response."""
-        url = os.getenv('SAMPLE_API')
-        response = requests.get(url)
-        
-        if response.status_code == 200:
-            content_type = response.headers.get('Content-Type')
-            
-            if 'application/json' in content_type:
-                data = response.json()
-                message = f"API Response: {data}"
+    @commands.cooldown(1, 10, commands.BucketType.user)
+    async def apicall(self, ctx: commands.Context, url: Optional[str] = None) -> None:
+        """Makes an API call and returns the response. Optionally takes a URL argument. (10s cooldown per user)"""
+        api_url = url or os.getenv('SAMPLE_API')
+        if not api_url or not api_url.startswith(('http://', 'https://')):
+            await ctx.send("API URL not configured or invalid. Please set SAMPLE_API in your .env file or provide a valid URL.")
+            return
+        try:
+            response = requests.get(api_url, timeout=10)
+            logger.info(f"API call to {api_url} returned status {response.status_code}")
+            if response.status_code == 200:
+                content_type = response.headers.get('Content-Type', '')
+                if 'application/json' in content_type:
+                    data = response.json()
+                    message = f"API Response: {data}"
+                else:
+                    data = response.text
+                    message = f"API Response: {data}"
+                if len(message) > 1800:
+                    message = message[:1800] + '... (truncated)'
+                await ctx.send(message)
             else:
-                data = response.text
-                message = f"API Response: {data}"
-            
-            await ctx.send(message)
-        else:
-            await ctx.send("Failed to retrieve data from the API.")
+                await ctx.send(f"Failed to retrieve data from the API. Status: {response.status_code}")
+        except requests.RequestException as e:
+            logger.error(f"API call failed: {e}")
+            await ctx.send(f"API call failed: {e}")
+        except Exception as e:
+            logger.error(f"Unexpected error in apicall: {e}")
+            await ctx.send(f"Unexpected error: {e}")
     
     @commands.command()
     async def weather(self, ctx):
         """Returns the current weather type for Eastern Americas and time until the next weather type."""
         url = os.getenv('WEATHER_API')
-        response = requests.get(url)
-        
-        if response.status_code == 200:
-            content_type = response.headers.get('Content-Type')
-            
-            if 'application/json' in content_type:
-                data = response.json()
-                eastern_america_data = data[0]['data']['Eastern Americas']
-                current_weather, time_until_next, next_weather = self.get_current_weather(eastern_america_data)
-                message = f"Current weather is '{current_weather}'. Time until '{next_weather}' is {time_until_next}."
-            else:
-                message = "The API did not return JSON data."
-            
-            await ctx.send(message)
+        data = fetch_json(url)
+        if data:
+            eastern_america_data = data[0]['data']['Eastern Americas']
+            current_weather, time_until_next, next_weather = self.get_current_weather(eastern_america_data)
+            message = f"Current weather is '{current_weather}'. Time until '{next_weather}' is {time_until_next}."
         else:
-            await ctx.send("Failed to retrieve data from the API.")
+            message = "Failed to retrieve data from the API."
+        await ctx.send(message)
 
     @commands.command()
     async def timeofday(self, ctx):
         """Returns the current time of day for Eastern Americas and time until the next one."""
         url = os.getenv('DAYNIGHT_API')
-        response = requests.get(url)
-        
-        if response.status_code == 200:
-            content_type = response.headers.get('Content-Type')
-            
-            if 'application/json' in content_type:
-                data = response.json()
-                eastern_america_data = data[0]['data']['Eastern Americas']
-                current_time_of_day, time_until_next, next_time_of_day = self.get_current_time_of_day(eastern_america_data)
-                message = f"Current time of day is '{current_time_of_day}'. Time until '{next_time_of_day}' is {time_until_next}."
-            else:
-                message = "The API did not return JSON data."
-            
-            await ctx.send(message)
+        data = fetch_json(url)
+        if data:
+            eastern_america_data = data[0]['data']['Eastern Americas']
+            current_time_of_day, time_until_next, next_time_of_day = self.get_current_time_of_day(eastern_america_data)
+            message = f"Current time of day is '{current_time_of_day}'. Time until '{next_time_of_day}' is {time_until_next}."
         else:
-            await ctx.send("Failed to retrieve data from the API.")
+            message = "Failed to retrieve data from the API."
+        await ctx.send(message)
 
     @commands.command()
-    async def when(self, ctx, condition: str):
-        """Tells how long until the specified condition (day, night, normal, rain) or if it's already that condition."""
+    async def when(self, ctx, condition: str, lang: str = 'en'):
+        """Tells how long until the specified condition (day, night, normal, rain) or if it's already that condition. (supports localization)"""
         condition = condition.lower()
         if condition not in ["day", "night", "rain"]:
-            await ctx.send("Invalid condition. Please choose from 'day', 'night', 'normal', or 'rain'.")
+            await ctx.send(t('invalid_condition', lang=lang))
             return
-
         if condition in ["day", "night"]:
             url = os.getenv('DAYNIGHT_API')
-            response = requests.get(url)
-            if response.status_code == 200:
-                content_type = response.headers.get('Content-Type')
-                if 'application/json' in content_type:
-                    data = response.json()
-                    eastern_america_data = data[0]['data']['Eastern Americas']
-                    current_time_of_day, time_until_next, next_time_of_day = self.get_current_time_of_day(eastern_america_data)
-                    if current_time_of_day.lower() == condition:
-                        message = f"It's currently '{condition}' already."
-                    else:
-                        message = f"Time until '{condition}' is {time_until_next}."
+            data = fetch_json(url)
+            if data:
+                eastern_america_data = data[0]['data']['Eastern Americas']
+                current_time_of_day, time_until_next, next_time_of_day = self.get_current_time_of_day(eastern_america_data)
+                if current_time_of_day.lower() == condition:
+                    message = f"It's currently '{condition}' already."
                 else:
-                    message = "The API did not return JSON data."
+                    message = f"Time until '{condition}' is {time_until_next}."
             else:
                 message = "Failed to retrieve data from the API."
         else:
             url = os.getenv('WEATHER_API')
-            response = requests.get(url)
-            if response.status_code == 200:
-                content_type = response.headers.get('Content-Type')
-                if 'application/json' in content_type:
-                    data = response.json()
-                    eastern_america_data = data[0]['data']['Eastern Americas']
-                    current_weather, time_until_next, next_weather = self.get_current_weather(eastern_america_data)
-                    if current_weather.lower() == condition:
-                        message = f"It's currently '{condition}'."
-                    else:
-                        message = f"Time until '{condition}' is {time_until_next}."
+            data = fetch_json(url)
+            if data:
+                eastern_america_data = data[0]['data']['Eastern Americas']
+                current_weather, time_until_next, next_weather = self.get_current_weather(eastern_america_data)
+                if current_weather.lower() == condition:
+                    message = f"It's currently '{condition}'."
                 else:
-                    message = "The API did not return JSON data."
+                    message = f"Time until '{condition}' is {time_until_next}."
             else:
                 message = "Failed to retrieve data from the API."
-
         await ctx.send(message)
 
     def get_current_weather(self, data):

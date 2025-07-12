@@ -1,0 +1,29 @@
+# Copilot Instructions: Coghedrin
+
+## Architecture
+- Use modular, maintainable code (separate cogs, listeners, and commands)
+- Use environment variables for config and secrets
+- Use async/await for all async code
+- Use Red-DiscordBot and discord.py best practices
+
+## Cross-Domain
+- Never commit secrets or credentials
+- Validate and sanitize all user input
+- Document all commands and listeners
+
+## Innovation
+- Prioritize accessibility in bot responses (clear, concise, and mention users)
+- Use descriptive docstrings and help text for commands
+- Add tests for all new features
+
+## Documentation
+- Update README for all major changes
+- Document all commands, listeners, and environment variables
+- Add code comments for complex logic
+
+## General
+- Use .gitignore to exclude .env, __pycache__, and sensitive files
+- Write clear, descriptive commit messages
+
+---
+For more, see the main README.md and code comments.
